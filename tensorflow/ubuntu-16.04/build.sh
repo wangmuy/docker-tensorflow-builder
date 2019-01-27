@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 set -e
 
 export PATH="/conda/bin:/usr/bin:$PATH"
@@ -10,10 +11,19 @@ fi
 gcc --version
 
 # Install an appropriate Python environment
-conda create --yes -n tensorflow python==$PYTHON_VERSION
-source activate tensorflow
-conda install --yes numpy wheel bazel
-conda install --yes -c conda-forge keras-applications
+tfbak=$(conda env list|grep tfbak || echo -n "")
+if [ "$tfbak" == "" ]; then
+  conda create --yes -n tensorflow python==$PYTHON_VERSION
+  source activate tensorflow
+  conda install --yes numpy wheel bazel=0.18.0
+  conda install --yes -c conda-forge keras-applications --no-deps
+  conda install --yes -c conda-forge keras-preprocessing --no-deps
+  conda create -n tfbak --clone tensorflow
+else
+  conda env remove -n tensorflow
+  conda create -n tensorflow --clone tfbak
+  source activate tensorflow
+fi
 
 # Compile TensorFlow
 
@@ -23,7 +33,8 @@ conda install --yes -c conda-forge keras-applications
 
 cd /
 rm -fr tensorflow/
-git clone --depth 1 --branch $TF_VERSION_GIT_TAG "https://github.com/tensorflow/tensorflow.git"
+[ -d /tfrepo ] && TF_REPO=/tfrepo || TF_REPO="http://github.com/tensorflow/tensorflow.git"
+git clone --depth 1 --branch $TF_VERSION_GIT_TAG $TF_REPO /tensorflow
 
 TF_ROOT=/tensorflow
 cd $TF_ROOT
@@ -76,6 +87,9 @@ fi
 
 # Compilation
 ./configure
+# ERROR: Config value cuda is not defined in any .rc file
+# see https://github.com/tensorflow/tensorflow/issues/23401
+# cat tools/bazel.rc >> .tf_configure.bazelrc
 
 if [ "$USE_GPU" -eq "1" ]; then
 
@@ -97,6 +111,8 @@ fi
 #bazel-bin/tensorflow/tools/pip_package/build_pip_package /wheels --project_name $PROJECT_NAME
 
 bazel-bin/tensorflow/tools/pip_package/build_pip_package /wheels
+# use $CONDA_PREFIX/etc/conda/activate.d deactivate.d dir for auto loading LD_LIBRARY_PATH, see
+# https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#saving-environment-variables
 
 # Fix wheel folder permissions
 chmod -R 777 /wheels/

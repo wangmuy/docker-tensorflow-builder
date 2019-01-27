@@ -1,11 +1,16 @@
-version: '3'
+version: '2.3'
+# https://stackoverflow.com/questions/47465696/how-do-i-specify-nvidia-runtime-from-docker-compose-yml
 services:
   tf:
     build: .
     stdin_open: true
     tty: true
+    runtime: ${_RUNTIME-runc}
     volumes:
       - ../../wheels:/wheels
+      - ../../download:/download
+      - ../../condacache/dotconda:/root/.conda
+      - ../../condacache/envs:/conda/envs
     environment:
       - TF_VERSION_GIT_TAG=${TF_VERSION_GIT_TAG-v1.8.0}
       - PYTHON_VERSION=${PYTHON_VERSION-3.6}

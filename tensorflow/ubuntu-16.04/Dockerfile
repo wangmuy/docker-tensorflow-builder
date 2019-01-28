@@ -1,10 +1,8 @@
 FROM ubuntu:16.04
 
-# gcc-6 g++-6: see https://github.com/ethereum-mining/ethminer/issues/731
+# 18.04 need gcc-6 g++-6: see https://github.com/ethereum-mining/ethminer/issues/731
 RUN apt update && apt install -y \
     build-essential \
-    gcc-6 \
-    g++-6 \
     curl \
     git \
     wget \

@@ -33,7 +33,8 @@ fi
 
 cd /
 rm -fr tensorflow/
-[ -d /tfrepo ] && TF_REPO=/tfrepo || TF_REPO="http://github.com/tensorflow/tensorflow.git"
+TF_REPO=/tfrepo/repo
+[ ! -d /tfrepo/repo/.git ] && git clone --depth 1 --branch $TF_VERSION_GIT_TAG http://github.com/tensorflow/tensorflow.git $TF_REPO || true
 git clone --depth 1 --branch $TF_VERSION_GIT_TAG $TF_REPO /tensorflow
 
 TF_ROOT=/tensorflow

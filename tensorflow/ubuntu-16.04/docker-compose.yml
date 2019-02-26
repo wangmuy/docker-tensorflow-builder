@@ -11,6 +11,7 @@ services:
       - ../../download:/download
       - ../../condacache/dotconda:/root/.conda
       - ../../condacache/envs:/conda/envs
+      - ../../tfrepo:/tfrepo
     environment:
       - TF_VERSION_GIT_TAG=${TF_VERSION_GIT_TAG-v1.8.0}
       - PYTHON_VERSION=${PYTHON_VERSION-3.6}
